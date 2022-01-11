@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+#shellcheck disable=SC1091,2059,2128,3028
+
+SRC_PATH="$(dirname "$(dirname "$BASH_SOURCE")")"
+LIB_PATH="${SRC_PATH}/lib"
+
+. "$LIB_PATH/cert.sh"
+
+if [ ! -r "$1" ]; then
+  cert_file_path="$(get_url_cert "$1")"
+else
+  cert_file_path="$1"
+fi
+
+if [ ! -r "$cert_file_path" ]; then
+  echo "No cert found" 1>&2
+  exit 1
+fi
+
+get_cert_expiration_days "$cert_file_path"
