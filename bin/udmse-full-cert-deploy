@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# This file must be in the udmse/udr to work and avoid 
+UNIFIOS_CERT_PATH="/data/unifi-core/config"
+UNIFIOS_KEYSTORE_PATH='/usr/lib/unifi/data'
+UNIFIOS_KEYSTORE_CERT_ALIAS='unifi'
+UNIFIOS_KEYSTORE_PASSWORD='aircontrolenterprise'
+
+# Certificates must be copied firstly to:
+#   - /data/unifi-core/config/unifi-core.crt
+#   - /data/unifi-core/config/unifi-core.key
+
+case "$(ubnt-device-info model || true)" in
+  "UniFi Dream Machine SE"|"UniFi Dream Router")
+    # Import certificate
+    echo "Importing ssl certificate"
+    chmod 644 "${UNIFIOS_CERT_PATH}/unifi-core.crt"
+    chmod 600 "${UNIFIOS_CERT_PATH}/unifi-core.key"
+    java -jar "/usr/lib/unifi/lib/ace.jar" import_key_cert "${UNIFIOS_CERT_PATH}/unifi-core.key" "${UNIFIOS_CERT_PATH}/unifi-core.crt"
+
+    # Wifiman, got it from https://github.com/gtrabanco/udm-le
+    echo "Wifiman"
+    # 1. Export only the server certificate from the full chain bundle
+    openssl x509 -in "${UNIFIOS_CERT_PATH}/unifi-core.crt" > "${UNIFIOS_CERT_PATH}/unifi-core-server-only.crt"
+    # 2. Bundle the private key and server-only certificate into a PKCS12 format file
+    openssl pkcs12 -export -inkey "${UNIFIOS_CERT_PATH}/unifi-core.key" -in "${UNIFIOS_CERT_PATH}/unifi-core-server-only.crt" -out "${UNIFIOS_KEYSTORE_PATH}/unifi-core-key-plus-server-only-cert.p12" -name "${UNIFIOS_KEYSTORE_CERT_ALIAS}" -password "pass:${UNIFIOS_KEYSTORE_PASSWORD}"
+    # 3. Backup the keystore before editing it.
+    cp "${UNIFIOS_KEYSTORE_PATH}/keystore" "${UNIFIOS_KEYSTORE_PATH}/keystore_$(date +"%Y-%m-%d_%Hh%Mm%Ss").backup"
+    # 4. Delete the existing full chain from the keystore
+    keytool -delete -alias unifi -keystore "${UNIFIOS_KEYSTORE_PATH}/keystore" -deststorepass "${UNIFIOS_KEYSTORE_PASSWORD}"
+    # 5. Import the server-only certificate and private key from the PKCS12 file
+    keytool -importkeystore -deststorepass "${UNIFIOS_KEYSTORE_PASSWORD}" -destkeypass "${UNIFIOS_KEYSTORE_PASSWORD}" -destkeystore "${UNIFIOS_KEYSTORE_PATH}/keystore" -srckeystore "${UNIFIOS_KEYSTORE_PATH}/unifi-core-key-plus-server-only-cert.p12" -srcstoretype PKCS12 -srcstorepass "${UNIFIOS_KEYSTORE_PASSWORD}" -alias "${UNIFIOS_KEYSTORE_CERT_ALIAS}" -noprompt
+
+    systemctl restart unifi-core
+    ;;
+  *)
+    echo "Not supported"
+    ;;
+esac

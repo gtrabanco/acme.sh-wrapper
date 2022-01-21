@@ -13,18 +13,19 @@ If you do not matter to use acme.sh or any other and you have a UDM/SE:
 - https://github.com/kchristensen/udm-le (You will need on_boot.d from boostchiken-dev repository)
 - https://github.com/boostchicken-dev/udm-utilities
 
-## Warning about UDM-PRO-SE & UDR Custom certificated
+## UDM-PRO-SE & UDR Custom certificated
 
-There is a way to deploy cert for udmse/udr but when I tested I am not sure what worked well because I made in the wrong way the debugging and due to cache and other stuff I can not asure with steps are fine.
+To deploy certs for UDM-PRO-SE & UDR you have to replace `/data/unifi-core/config/unifi-core.crt` and `/data/unifi-core/config/unifi-core.key`.
 
-So I am not sure if replacing `/data/unifi-core/config/unifi-core-direct.crt` and `/data/unifi-core/config/unifi-core-direct.key` is enough or in contract you must replace `/data/unifi-core/config/unifi-core.crt` and `/data/unifi-core/config/unifi-core.key` or all of them (the 4 files I said).
+Finally reset unifi-core service:
 
-Not sure if after replacing those files needs a full reboot to work because I updated to latest Unifi Controller after replacing those 4 certificate files and after restarting the services:
+```bash
+systemctl restart unifi-core
+```
 
-- `/etc/init.d/unifi`
-- `/etc/init.d/unifi-base-ucore`
+Import the certificates using java or keystore seems not necessary but keep doing it because maybe there is any non used option by me which needs that step.
 
-It did not work but after a full reboot it worked and I could access my udmse with a domain and a valid certificate.
+If you want to import certificates for wifiman and do all stuff in one step you need to put the file [udmse-full-cert-deploy](bin/udmse-full-cert-deploy) in the udmse or udr `/root/bin/udmse-full-cert-deploy` and give to it `chmod u+x /root/bin/udmse-full-cert-deploy` permissions.
 
 ## Autoload env files
 
