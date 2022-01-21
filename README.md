@@ -27,6 +27,13 @@ Import the certificates using java or keystore seems not necessary but keep doin
 
 If you want to import certificates for wifiman and do all stuff in one step you need to put the file [udmse-full-cert-deploy](bin/udmse-full-cert-deploy) in the udmse or udr `/root/bin/udmse-full-cert-deploy` and give to it `chmod u+x /root/bin/udmse-full-cert-deploy` permissions.
 
+
+If you use the script to import certificates to keystore you will receive a warning that is not important:
+```bash
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore /usr/lib/unifi/data/keystore -destkeystore /usr/lib/unifi/data/keystore -deststoretype pkcs12"
+```
+
 ## Autoload env files
 
 This script will autoload any env file by the value of:
