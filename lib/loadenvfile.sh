@@ -20,7 +20,6 @@ get_env() {
 
   for file in "$@"; do
     for p in "${paths[@]}"; do
-
       if [ -f "${p}/${file}.private" ]; then
         printf "%s/%s.private" "$p" "$file"
         break
